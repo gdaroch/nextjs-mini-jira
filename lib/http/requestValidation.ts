@@ -79,3 +79,30 @@ export function parseQueryParameters<T>(
 
   return { success: true, data: parsedParams.data };
 }
+
+/**
+ * Parses and validates request's route parameters
+ * @param {unknown} routeParams Incoming route parameters
+ * @param {ZodSchema<T>} schema Zod schema
+ * @returns {ValidationResult<T>} parameters data and status
+ */
+export function parseRouteParameters<T>(
+  routeParams: unknown,
+  schema: ZodSchema<T>
+): ValidationResult<T> {
+  const parsedParams = schema.safeParse(routeParams);
+  if (!parsedParams.success) {
+    return {
+      success: false,
+      response: NextResponse.json(
+        {
+          error: "Error validating query params",
+          details: parsedParams.error.issues,
+        },
+        { status: httpStatusCodes.BAD_REQUEST }
+      ),
+    };
+  }
+
+  return { success: true, data: parsedParams.data };
+}

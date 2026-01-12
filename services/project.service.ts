@@ -1,8 +1,13 @@
 import {
   CreateProjectInput,
   GetProjectsInput,
+  GetProjectByIdInput,
 } from "@/lib/schemas/project.schema";
-import { createProject, getProjects } from "@/repositories/project.repo";
+import {
+  createProject,
+  getProjects,
+  getProjectById,
+} from "@/repositories/project.repo";
 import { Project } from "@/domain/project";
 
 /**
@@ -13,9 +18,7 @@ import { Project } from "@/domain/project";
 export async function createProjectService(
   input: CreateProjectInput
 ): Promise<Project> {
-  const project = await createProject(input);
-
-  return project;
+  return createProject(input);
 }
 
 /**
@@ -26,11 +29,14 @@ export async function createProjectService(
 export async function getProjectsService(
   input: GetProjectsInput
 ): Promise<Project[]> {
-  const projects = await getProjects(
-    input.limit,
-    input.sortBy,
-    input.sortOrder
-  );
+  return getProjects(input.limit, input.sortBy, input.sortOrder);
+}
 
-  return projects;
+/**
+ *  Get a single project by project Id
+ * @param {GetProjectByIdInput} input Validated object with projectId
+ * @returns {Promise<Project>} found project
+ */
+export async function getProjectByIdService(input: GetProjectByIdInput) {
+  return getProjectById(input.projectId);
 }

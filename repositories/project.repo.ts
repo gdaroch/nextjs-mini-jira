@@ -1,6 +1,7 @@
 import { ProjectModel } from "@/models/Project.model";
 import { CreateProjectInput } from "@/lib/schemas/project.schema";
 import { Project } from "@/domain/project";
+import { NotFoundError } from "@/domain/errors";
 
 /**
  * Creates and persists a new project
@@ -44,4 +45,25 @@ export async function getProjects(
     createdAt: document.createdAt,
     updatedAt: document.updatedAt,
   }));
+}
+
+/**
+ * Gets project by projectId
+ * @param {string} projectId Project id
+ * @returns {Promise<Project>} Project's data found
+ */
+export async function getProjectById(projectId: string): Promise<Project> {
+  const document = await ProjectModel.findById(projectId);
+
+  if (!document) {
+    throw new NotFoundError("Project not found");
+  }
+
+  return {
+    id: document._id.toString(),
+    name: document.name,
+    description: document.description,
+    createdAt: document.createdAt,
+    updatedAt: document.updatedAt,
+  };
 }

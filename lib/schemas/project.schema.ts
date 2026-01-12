@@ -14,3 +14,9 @@ export const GetProjectsSchema = z.object({
 });
 
 export type GetProjectsInput = z.infer<typeof GetProjectsSchema>;
+
+export const GetProjectByIdSchema = z.object({
+  projectId: z.string().min(1),
+});
+
+export type GetProjectByIdInput = z.infer<typeof GetProjectByIdSchema>;
