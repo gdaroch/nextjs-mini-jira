@@ -12,7 +12,7 @@ import {
   parseJsonBody,
   parseQueryParameters,
 } from "@/lib/http/requestValidation";
-import { httpStatusCodes } from "@/lib/http/enums";
+import { HttpStatusCodes } from "@/lib/http/enums";
 
 /**
  * Creates a project
@@ -20,8 +20,6 @@ import { httpStatusCodes } from "@/lib/http/enums";
  * @returns HTTP response
  */
 export async function POST(request: Request): Promise<Response> {
-  await connectMongo();
-
   // gets and validates the body
   const parsedBody = await parseJsonBody(request, CreateProjectSchema);
   if (!parsedBody.success) {
@@ -29,11 +27,12 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   // saves project in DB
+  await connectMongo();
   const project = await createProjectService(parsedBody.data);
 
   return NextResponse.json(
     { data: project },
-    { status: httpStatusCodes.CREATED }
+    { status: HttpStatusCodes.CREATED }
   );
 }
 
@@ -43,15 +42,22 @@ export async function POST(request: Request): Promise<Response> {
  * @returns HTTP response
  */
 export async function GET(request: Request): Promise<Response> {
-  await connectMongo();
-
   // gets and validates the params
   const parsedQueryParams = parseQueryParameters(request, GetProjectsSchema);
   if (!parsedQueryParams.success) {
     return parsedQueryParams.response;
   }
 
-  const projects = await getProjectsService(parsedQueryParams.data);
+  await connectMongo();
 
-  return NextResponse.json({ data: projects }, { status: httpStatusCodes.OK });
+  // sets optional values if needed
+  const requestOptions = {
+    sortBy: parsedQueryParams.data.sortBy ?? "createdAt",
+    sortOrder: parsedQueryParams.data.sortOrder ?? "desc",
+    limit: parsedQueryParams.data.limit ?? 20,
+  };
+
+  const projects = await getProjectsService(requestOptions);
+
+  return NextResponse.json({ data: projects }, { status: HttpStatusCodes.OK });
 }

@@ -1,42 +1,58 @@
+import { Project } from "@/domain/project";
 import {
-  CreateProjectInput,
-  GetProjectsInput,
-  GetProjectByIdInput,
-} from "@/lib/schemas/project.schema";
+  CreateProjectData,
+  GetProjectsOptions,
+  UpdateProjectData,
+} from "@/domain/project.dto";
 import {
   createProject,
-  getProjects,
   getProjectById,
+  getProjects,
+  updateProject,
 } from "@/repositories/project.repo";
-import { Project } from "@/domain/project";
 
 /**
  * Creates a new project
- * @param {CreateProjectInput} input Validated project data
+ * @param {CreateProjectData} createProjectData Project data object
  * @returns {Promise<Project>} Created project
  */
 export async function createProjectService(
-  input: CreateProjectInput
+  createProjectData: CreateProjectData
 ): Promise<Project> {
-  return createProject(input);
+  return createProject(createProjectData);
 }
 
 /**
  * Get available projects
- * @param {GetProjectsInput} input Validated filters
+ * @param {GetProjectData} getProjectData Object containing filter options
  * @returns {Promise<Project[]>} a list of projects
  */
 export async function getProjectsService(
-  input: GetProjectsInput
+  getProjectData: GetProjectsOptions
 ): Promise<Project[]> {
-  return getProjects(input.limit, input.sortBy, input.sortOrder);
+  return getProjects(getProjectData);
 }
 
 /**
  *  Get a single project by project Id
- * @param {GetProjectByIdInput} input Validated object with projectId
+ * @param {string} projectId requested projectId
  * @returns {Promise<Project>} found project
  */
-export async function getProjectByIdService(input: GetProjectByIdInput) {
-  return getProjectById(input.projectId);
+export async function getProjectByIdService(
+  projectId: string
+): Promise<Project> {
+  return getProjectById(projectId);
+}
+
+/**
+ * Updates an existing project
+ * @param {string} projectId requested projectId
+ * @param {UpdateProjectData} updateProjectData Project data object
+ * @returns {Promise<Project>} found project
+ */
+export async function updateProjectByIdService(
+  projectId: string,
+  updateProjectData: UpdateProjectData
+): Promise<Project> {
+  return updateProject(projectId, updateProjectData);
 }

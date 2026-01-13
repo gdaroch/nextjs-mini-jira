@@ -1,50 +1,49 @@
-import { ProjectModel } from "@/models/Project.model";
-import { CreateProjectInput } from "@/lib/schemas/project.schema";
-import { Project } from "@/domain/project";
 import { NotFoundError } from "@/domain/errors";
+import { Project } from "@/domain/project";
+import {
+  CreateProjectData,
+  GetProjectsOptions,
+  UpdateProjectData,
+} from "@/domain/project.dto";
+import { ProjectModel } from "@/models/Project.model";
+
+type ToProjectParams = {
+  _id: unknown;
+  name: string;
+  description?: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 /**
  * Creates and persists a new project
- * @param {CreateProjectInput} data Validated project data
+ * @param {CreateProjectData} createProjectData Project data object
  * @returns {Promise<Project>} Created project
  */
 export async function createProject(
-  data: CreateProjectInput
+  createProjectData: CreateProjectData
 ): Promise<Project> {
-  const document = await ProjectModel.create(data);
+  const document = await ProjectModel.create(createProjectData);
 
-  return {
-    id: document._id.toString(),
-    name: document.name,
-    description: document.description,
-    createdAt: document.createdAt,
-    updatedAt: document.updatedAt,
-  };
+  return toProject(document.toObject());
 }
 
 /**
  * Gets available projects from DB
- * @param {number} [limit=20] max limit of records
- * @param {string} [sortBy="createdAt"] sorting field
- * @param {"asc" | "desc"} [sortOrder="desc"] whether to sort asc or desc
+ * @param {GetProjectsOptions} getProjectData object containing sortBy, sortOrder and limit
  * @returns {Promise<Project[]>} A list of projects
  */
 export async function getProjects(
-  limit: number = 20,
-  sortBy: string = "createdAt",
-  sortOrder: "asc" | "desc" = "desc"
+  getProjectData: GetProjectsOptions
 ): Promise<Project[]> {
+  const { sortBy, sortOrder, limit } = getProjectData;
+
   const documents = await ProjectModel.find()
     .sort({ [sortBy]: sortOrder })
-    .limit(limit);
+    .limit(limit)
+    .lean();
 
-  return documents.map((document) => ({
-    id: document._id.toString(),
-    name: document.name,
-    description: document.description,
-    createdAt: document.createdAt,
-    updatedAt: document.updatedAt,
-  }));
+  return documents.map((document) => toProject(document));
 }
 
 /**
@@ -53,14 +52,49 @@ export async function getProjects(
  * @returns {Promise<Project>} Project's data found
  */
 export async function getProjectById(projectId: string): Promise<Project> {
-  const document = await ProjectModel.findById(projectId);
+  const document = await ProjectModel.findById(projectId).lean();
 
   if (!document) {
     throw new NotFoundError("Project not found");
   }
 
+  return toProject(document);
+}
+
+/**
+ *
+ * @param {string} projectId Project id
+ * @param {UpdateProjectData} updateProjectData Project data object
+ * @returns {Promise<Project>} Updated project
+ */
+export async function updateProject(
+  projectId: string,
+  updateProjectData: UpdateProjectData
+): Promise<Project> {
+  const document = await ProjectModel.findByIdAndUpdate(
+    projectId,
+    { $set: updateProjectData },
+    {
+      runValidators: true,
+      new: true,
+    }
+  ).lean();
+
+  if (!document) {
+    throw new NotFoundError("Project not found");
+  }
+
+  return toProject(document);
+}
+
+/**
+ * Transform a mongoose document into a plain project object
+ * @param {ToProjectParams} document A mongoose project object
+ * @returns {Project} a plain project object
+ */
+function toProject(document: ToProjectParams): Project {
   return {
-    id: document._id.toString(),
+    id: String(document._id),
     name: document.name,
     description: document.description,
     createdAt: document.createdAt,

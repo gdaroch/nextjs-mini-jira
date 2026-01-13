@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
-import { ZodSchema } from "zod"; // TODO: Fix deprecated code
+import { z } from "zod";
 import { ValidationResult } from "@/lib/http/types";
-import { httpStatusCodes } from "@/lib/http/enums";
+import { HttpStatusCodes } from "@/lib/http/enums";
 
 /**
  * Parses and validates a request's body using a Zod schema
  * @param {Request} request Incoming request
- * @param {ZodSchema<T>} schema Zod schema
+ * @param {z.ZodType<T>} schema Zod schema
  * @returns {ValidationResult<T>} request data and status
  */
 export async function parseJsonBody<T>(
   request: Request,
-  schema: ZodSchema<T>
+  schema: z.ZodType<T>
 ): Promise<ValidationResult<T>> {
   let body: unknown;
 
@@ -24,7 +24,7 @@ export async function parseJsonBody<T>(
         {
           error: "Invalid json body",
         },
-        { status: httpStatusCodes.BAD_REQUEST }
+        { status: HttpStatusCodes.BAD_REQUEST }
       ),
     };
   }
@@ -38,7 +38,7 @@ export async function parseJsonBody<T>(
           error: "Error validating body",
           details: parsedBody.error.issues,
         },
-        { status: httpStatusCodes.BAD_REQUEST }
+        { status: HttpStatusCodes.BAD_REQUEST }
       ),
     };
   }
@@ -47,17 +47,18 @@ export async function parseJsonBody<T>(
 }
 
 /**
- * Parses and validates request's query params using a Zod schema
+ * Parses and validates request's query params using a Zod schema, right now this function doesn't support arrays
  * @param {Request} request Incoming request
- * @param {ZodSchema<T>} schema Zod schema
+ * @param {z.ZodType<T>} schema Zod schema
  * @returns {ValidationResult<T>} request data and status
  */
 export function parseQueryParameters<T>(
   request: Request,
-  schema: ZodSchema<T>
+  schema: z.ZodType<T>
 ): ValidationResult<T> {
   const { searchParams } = new URL(request.url);
 
+  // TODO: add array support
   const queryParams: Record<string, string> = {};
   for (const [paramName, paramValue] of searchParams.entries()) {
     queryParams[paramName] = paramValue;
@@ -72,7 +73,7 @@ export function parseQueryParameters<T>(
           error: "Error validating query params",
           details: parsedParams.error.issues,
         },
-        { status: httpStatusCodes.BAD_REQUEST }
+        { status: HttpStatusCodes.BAD_REQUEST }
       ),
     };
   }
@@ -83,12 +84,12 @@ export function parseQueryParameters<T>(
 /**
  * Parses and validates request's route parameters
  * @param {unknown} routeParams Incoming route parameters
- * @param {ZodSchema<T>} schema Zod schema
+ * @param {z.ZodType<T>} schema Zod schema
  * @returns {ValidationResult<T>} parameters data and status
  */
 export function parseRouteParameters<T>(
   routeParams: unknown,
-  schema: ZodSchema<T>
+  schema: z.ZodType<T>
 ): ValidationResult<T> {
   const parsedParams = schema.safeParse(routeParams);
   if (!parsedParams.success) {
@@ -96,10 +97,10 @@ export function parseRouteParameters<T>(
       success: false,
       response: NextResponse.json(
         {
-          error: "Error validating query params",
+          error: "Error validating route params",
           details: parsedParams.error.issues,
         },
-        { status: httpStatusCodes.BAD_REQUEST }
+        { status: HttpStatusCodes.BAD_REQUEST }
       ),
     };
   }
