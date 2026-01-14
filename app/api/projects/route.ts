@@ -1,5 +1,9 @@
-import { NextResponse } from "next/server";
 import { connectMongo } from "@/lib/db/mongoose";
+import {
+  parseJsonBody,
+  parseQueryParameters,
+} from "@/lib/http/requestValidation";
+import { HttpResponse } from "@/lib/http/response";
 import {
   CreateProjectSchema,
   GetProjectsSchema,
@@ -8,11 +12,6 @@ import {
   createProjectService,
   getProjectsService,
 } from "@/services/project.service";
-import {
-  parseJsonBody,
-  parseQueryParameters,
-} from "@/lib/http/requestValidation";
-import { HttpStatusCodes } from "@/lib/http/enums";
 
 /**
  * Creates a project
@@ -30,10 +29,7 @@ export async function POST(request: Request): Promise<Response> {
   await connectMongo();
   const project = await createProjectService(parsedBody.data);
 
-  return NextResponse.json(
-    { data: project },
-    { status: HttpStatusCodes.CREATED }
-  );
+  return HttpResponse.ok(project);
 }
 
 /**
@@ -59,5 +55,5 @@ export async function GET(request: Request): Promise<Response> {
 
   const projects = await getProjectsService(requestOptions);
 
-  return NextResponse.json({ data: projects }, { status: HttpStatusCodes.OK });
+  return HttpResponse.ok(projects);
 }

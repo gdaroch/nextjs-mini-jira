@@ -1,19 +1,18 @@
+import { NotFoundError } from "@/domain/errors";
 import { connectMongo } from "@/lib/db/mongoose";
 import {
-  parseRouteParameters,
   parseJsonBody,
+  parseRouteParameters,
 } from "@/lib/http/requestValidation";
+import { HttpResponse } from "@/lib/http/response";
 import {
   GetProjectByIdSchema,
   UpdateProjectSchema,
 } from "@/lib/schemas/project.schema";
-import { HttpStatusCodes } from "@/lib/http/enums";
 import {
   getProjectByIdService,
   updateProjectByIdService,
 } from "@/services/project.service";
-import { NextResponse } from "next/server";
-import { NotFoundError } from "@/domain/errors";
 
 /**
  * Gets a single project by projectId
@@ -39,13 +38,10 @@ export async function GET(
     const { projectId } = parsedRouteParams.data;
 
     const project = await getProjectByIdService(projectId);
-    return NextResponse.json({ data: project }, { status: HttpStatusCodes.OK });
+    return HttpResponse.ok(project);
   } catch (error: unknown) {
     if (error instanceof NotFoundError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: HttpStatusCodes.NOT_FOUND }
-      );
+      return HttpResponse.notFound(error.message);
     }
 
     throw error;
@@ -77,10 +73,7 @@ export async function PATCH(
   }
 
   if (Object.keys(parsedBody.data).length === 0) {
-    return NextResponse.json(
-      { error: "At least one field must be provided" },
-      { status: HttpStatusCodes.BAD_REQUEST }
-    );
+    return HttpResponse.badRequest("At least one field must be provided");
   }
 
   // tries to update a project using the projectId
@@ -92,16 +85,10 @@ export async function PATCH(
       projectId,
       parsedBody.data
     );
-    return NextResponse.json(
-      { data: updatedProject },
-      { status: HttpStatusCodes.OK }
-    );
+    return HttpResponse.ok(updatedProject);
   } catch (error: unknown) {
     if (error instanceof NotFoundError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: HttpStatusCodes.NOT_FOUND }
-      );
+      return HttpResponse.notFound(error.message);
     }
 
     throw error;

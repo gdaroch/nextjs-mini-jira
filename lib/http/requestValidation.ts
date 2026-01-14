@@ -1,7 +1,6 @@
-import { NextResponse } from "next/server";
-import { z } from "zod";
+import { HttpResponse } from "@/lib/http/response";
 import { ValidationResult } from "@/lib/http/types";
-import { HttpStatusCodes } from "@/lib/http/enums";
+import { z } from "zod";
 
 /**
  * Parses and validates a request's body using a Zod schema
@@ -20,12 +19,7 @@ export async function parseJsonBody<T>(
   } catch {
     return {
       success: false,
-      response: NextResponse.json(
-        {
-          error: "Invalid json body",
-        },
-        { status: HttpStatusCodes.BAD_REQUEST }
-      ),
+      response: HttpResponse.badRequest("Invalid json body"),
     };
   }
 
@@ -33,12 +27,9 @@ export async function parseJsonBody<T>(
   if (!parsedBody.success) {
     return {
       success: false,
-      response: NextResponse.json(
-        {
-          error: "Error validating body",
-          details: parsedBody.error.issues,
-        },
-        { status: HttpStatusCodes.BAD_REQUEST }
+      response: HttpResponse.badRequest(
+        "Error validating body",
+        parsedBody.error.issues
       ),
     };
   }
@@ -68,12 +59,9 @@ export function parseQueryParameters<T>(
   if (!parsedParams.success) {
     return {
       success: false,
-      response: NextResponse.json(
-        {
-          error: "Error validating query params",
-          details: parsedParams.error.issues,
-        },
-        { status: HttpStatusCodes.BAD_REQUEST }
+      response: HttpResponse.badRequest(
+        "Error validating query params",
+        parsedParams.error.issues
       ),
     };
   }
@@ -95,12 +83,9 @@ export function parseRouteParameters<T>(
   if (!parsedParams.success) {
     return {
       success: false,
-      response: NextResponse.json(
-        {
-          error: "Error validating route params",
-          details: parsedParams.error.issues,
-        },
-        { status: HttpStatusCodes.BAD_REQUEST }
+      response: HttpResponse.badRequest(
+        "Error validating route params",
+        parsedParams.error.issues
       ),
     };
   }
