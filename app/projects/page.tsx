@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getProjects } from "@/lib/projects/getProjects";
+import ProjectTable from "@/app/projects/_components/ProjectTable";
 
 export const metadata: Metadata = {
   title: "Projects",
@@ -12,13 +13,13 @@ export default async function Page() {
     projectList.length === 0 ? (
       <p>No projects yet</p>
     ) : (
-      <pre>{JSON.stringify(projectList, null, 2)}</pre>
+      <ProjectTable projectList={projectList} />
     );
 
   return (
-    <>
-      <h1>Projects</h1>
+    <main className="mx-auto max-w-4xl p-6">
+      <h1 className="text-2xl font-semibold">Projects</h1>
       {content}
-    </>
+    </main>
   );
 }
