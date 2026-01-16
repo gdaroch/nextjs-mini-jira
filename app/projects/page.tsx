@@ -9,17 +9,9 @@ export const metadata: Metadata = {
 export default async function Page() {
   const projectList = await getProjects();
 
-  const content =
-    projectList.length === 0 ? (
-      <p>No projects yet</p>
-    ) : (
-      <ProjectTable projectList={projectList} />
-    );
+  if (projectList.length === 0) {
+    return <p>No projects yet</p>;
+  }
 
-  return (
-    <main className="mt-10  mx-auto w-3/4 p-8 bg-indigo-50 border-3 border-indigo-50 rounded-xl shadow-md">
-      <h1 className="font-bold text-2xl/relaxed text-indigo-600">Projects</h1>
-      {content}
-    </main>
-  );
+  return <ProjectTable projectList={projectList} />;
 }

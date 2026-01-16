@@ -10,7 +10,7 @@ export async function getProjects(): Promise<Project[]> {
 
   const response = await fetch(url, { cache: "no-store" });
 
-  if (!response.ok) {
+  if (response.ok) {
     throw new Error("Error getting projects from API");
   }
 
