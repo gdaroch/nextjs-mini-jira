@@ -17,8 +17,8 @@ export default async function Page() {
     );
 
   return (
-    <main className="mx-auto max-w-4xl p-6">
-      <h1 className="text-2xl font-semibold">Projects</h1>
+    <main className="mt-10  mx-auto w-3/4 p-8 bg-indigo-50 border-3 border-indigo-50 rounded-xl shadow-md">
+      <h1 className="font-bold text-2xl/relaxed text-indigo-600">Projects</h1>
       {content}
     </main>
   );
